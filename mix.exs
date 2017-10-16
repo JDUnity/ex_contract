@@ -9,12 +9,13 @@ defmodule ExContract.Mixfile do
       start_permanent: Mix.env == :prod,
       deps: deps(),
        # Docs
-      name: "Elixir Contracts",
-      source_url: "https://bitbucket.org/jdunity/ex_contracts",
+      name: "Ex Contract",
+      source_url: "https://github.com/JDUnity/ex_contract",
       homepage_url: "http://unitypos.com",
       docs: [
-      logo: "JD_Unity2_128x128.png",
-      extras: ["README.md"]
+        main: "readme",
+        logo: "JD_Unity2_128x128.png",
+        extras: ["README.md"]
             ],
       # Testing setup to enable dialyzer. Tests are implemented in .ex files to allow dialyzer to
       # perform type checking. They are run using .exs files.
