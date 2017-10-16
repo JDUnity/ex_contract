@@ -1,7 +1,7 @@
 defmodule ExContract do
   @moduledoc """
   This is Elixir library application that adds support for design by contract. For intro to DbC
-  methodology see [Into to DbC](https://www.eiffel.com/values/design-by-contract/introduction/).
+  methodology see [DbC](https://en.wikipedia.org/wiki/Design_by_contract).
   """
 
   alias Macro.Env

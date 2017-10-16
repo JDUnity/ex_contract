@@ -7,6 +7,8 @@ defmodule ExContract.Mixfile do
       version: "0.1.0",
       elixir: "~> 1.5",
       start_permanent: Mix.env == :prod,
+      description: description(),
+      package: package(),
       deps: deps(),
        # Docs
       name: "Ex Contract",
@@ -22,6 +24,19 @@ defmodule ExContract.Mixfile do
       elixirc_paths: elixirc_paths(Mix.env),
       test_pattern: "*_test.exs",
       warn_test_pattern: "test.ex"
+    ]
+  end
+
+  defp description() do
+    "This is Elixir library application that adds support for design by contract. For intro to DbC
+    methodology see https://en.wikipedia.org/wiki/Design_by_contract."
+  end
+
+  defp package() do
+    [
+      maintainers: ["Dariusz Gawdzik", "John Inglis"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/JDUnity/ex_contract"}
     ]
   end
 
