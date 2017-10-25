@@ -88,7 +88,7 @@ The package is available in Hex and can be added as dependency into mix.exs file
 ```elixir
 def deps do
   [
-    {:ex_contract, "~> 0.1.0"}
+    {:ex_contract, "~> 0.1.1"}
   ]
 end
 ```
@@ -203,7 +203,7 @@ by adding `ex_contract` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:ex_contract, "~> 0.1.0"}
+    {:ex_contract, "~> 0.1.1"}
   ]
 end
 ```
