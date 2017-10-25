@@ -1,7 +1,8 @@
 defmodule ExContract.CompileState do
   @moduledoc """
-  Holds compilation state for JdContracts storing each condition and optional message in
-  corresponding requires or ensures lists.
+  This module is not meant to be used directly by client code. This module holds compilation state
+  for `ExContract`. Stores each condition and optional message in corresponding requires or ensures
+  lists.
   """
 
   alias ExContract.ConditionMsg
@@ -12,7 +13,7 @@ defmodule ExContract.CompileState do
   end
 
   @typedoc """
-  Defines fields that store `JdContracts` compile state.
+  Defines fields that store `ExContract` compile state.
   * `:requires` - list of `ExContract.ConditionMsg` that define a single method pre-conditions.
   * `:ensures` - list of `ExContract.ConditionMsg` that define a single method post-conditions.
   """
@@ -26,7 +27,7 @@ defmodule ExContract.CompileState do
   def new, do: %__MODULE__{requires: [], ensures: []}
 
   @doc """
-  Adds a require condition of type `ExContract.ConditionMsg` to the `requires` list. The condition
+  Adds requires condition of type `ExContract.ConditionMsg` to the `requires` list. The condition
   is associated with `nil` message.
   """
   @spec add_require(state :: __MODULE__.t, condition :: tuple) :: __MODULE__.t
@@ -35,7 +36,7 @@ defmodule ExContract.CompileState do
   end
 
   @doc """
-  Adds a require condition of type `ExContract.ConditionMsg` to the `requires` list. The condition
+  Adds requires condition of type `ExContract.ConditionMsg` to the `requires` list. The condition
   is associated with provided message.
   """
   @spec add_require(state :: __MODULE__.t, condition :: tuple, msg :: String.t) :: __MODULE__.t
@@ -44,7 +45,7 @@ defmodule ExContract.CompileState do
   end
 
   @doc """
-  Adds a ensures condition of type `ExContract.ConditionMsg` to the `ensures` list. The condition
+  Adds ensures condition of type `ExContract.ConditionMsg` to the `ensures` list. The condition
   is associated with `nil` message.
   """
   @spec add_ensure(state :: __MODULE__.t, condition :: tuple) :: __MODULE__.t
@@ -54,7 +55,7 @@ defmodule ExContract.CompileState do
 
   @doc """
   Adds a ensures condition of type `ExContract.ConditionMsg` to the `ensures` list. The condition
-  is associated with `nil` message.
+  is associated with provided message.
   """
   @spec add_ensure(state :: __MODULE__.t, condition :: tuple, msg :: String.t) :: __MODULE__.t
   def add_ensure(%__MODULE__{ensures: ensures} = state, condition, msg) do

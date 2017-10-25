@@ -1,7 +1,8 @@
 defmodule ExContract do
   @moduledoc """
   This is Elixir library application that adds support for design by contract. For intro to DbC
-  methodology see [DbC](https://en.wikipedia.org/wiki/Design_by_contract).
+  methodology see [DbC](https://en.wikipedia.org/wiki/Design_by_contract). Also, you may consult
+  [readme](readme.html) file for usage and theory behind Design by Contract.
   """
 
   alias Macro.Env
@@ -11,6 +12,10 @@ defmodule ExContract do
 
   @default_state CompileState.new
 
+  @typedoc """
+  Defines type for Elixir Abastract Syntax Tree that is being modified by this module to add support
+  for Design by Contract to Elixir.
+  """
   @type t_ast :: tuple | list(any) | any
 
   #
@@ -126,7 +131,7 @@ defmodule ExContract do
   end
 
   @spec def_implicit_try_imp(list) :: t_ast
-  def def_implicit_try_imp([do: body, after: rest]) do
+  defp def_implicit_try_imp([do: body, after: rest]) do
     quote do
       try do
         unquote(body)
@@ -135,7 +140,7 @@ defmodule ExContract do
       end
     end
   end
-  def def_implicit_try_imp([do: body, rescue: rest]) do
+  defp def_implicit_try_imp([do: body, rescue: rest]) do
     quote do
       try do
         unquote(body)
@@ -144,7 +149,7 @@ defmodule ExContract do
       end
     end
   end
-  def def_implicit_try_imp([do: body, catch: rest]) do
+  defp def_implicit_try_imp([do: body, catch: rest]) do
     quote do
       try do
         unquote(body)
@@ -176,34 +181,115 @@ defmodule ExContract do
     :ok = Agent.stop(agent_name(env))
   end
 
+  @doc ~S"""
+  Defines a requirement that needs to be satisfied by a caller to a function in terms of
+  pre-condition. A call to a function that specifies pre-condition is only valid if the `condition`
+  parameter, upon method entry, is true. Parameter `condition` evaluating to false, is an
+  indicatation of a bug in the caller. This bug is manifested by exception
+  `ExContract.RequiresException`. Macro `requires` can occure one or more times before function
+  definition. By convention `requires` macro is defined before `ensures` is.
+
+  Example:
+  ```elixir
+  requires x > 0
+  requires x < y, "Called with x=#{inspect x} and y=#{inspect y}"
+  @spec test_requires(x :: integer, y :: integer) :: integer | no_return
+  def test_requires(x, y) do
+    ...
+    ...
+  end
+  ```
+  """
   defmacro requires(condition) do
     Agent.update(agent_name(__CALLER__),
       fn %CompileState{} = s -> CompileState.add_require(s, condition) end)
   end
 
+  @doc ~S"""
+  The same as `ExContract.requires/1` but in addition accepts message paramter that gets embedded
+  into `ExContract.RequiresException`.
+  """
   defmacro requires(condition, msg) do
     Agent.update(agent_name(__CALLER__),
       fn %CompileState{} = s -> CompileState.add_require(s, condition, msg) end)
   end
 
+  @doc ~S"""
+  Used for defining a benefit that a function guarantees to a client code. Establishes condition
+  that is true when a function exits. Condition being false, upon a function exit, indicates a bug
+  in the implementation of the function. This bug is manifested by exception
+  `ExContract.EnsuresException`. Macro `ensures` can occure one or more times before function
+  definition. By convention `ensures` macro is specified after `requires` is. This macro defines
+  `result` variable that contains the returned result from the funciton used in specifying the
+  post-condition.
+
+  Example:
+  ```elixir
+  ensures result == x * y
+  @spec test_ensures(x :: integer, y :: integer) :: integer | no_return
+  def test_ensures(x, y) do
+    x * y
+  end
+  ```
+  """
   defmacro ensures(condition) do
     Agent.update(agent_name(__CALLER__),
       fn %CompileState{} = s -> CompileState.add_ensure(s, condition) end)
   end
 
+  @doc ~S"""
+  The same as `ExContract.ensures/1` but in addition accepts message paramter that gets embedded
+  into `ExContract.EnsuresException`.
+  """
   defmacro ensures(condition, msg) do
     Agent.update(agent_name(__CALLER__),
       fn %CompileState{} = s -> CompileState.add_ensure(s, condition, msg) end)
   end
 
-  defmacro check(condition, msg) do
-    check_ast(condition, msg)
-  end
+  @doc ~S"""
+  Defines a condition that is belived to be true at certain point of function execution. Check
+  condition being invalid, indicates that assumptions about program computation need to be revised.
+  In effect, this indicates a bug in the implementation of the function. This bug is manifested by
+  exception`ExContract.CheckException`. Macro `check` can occure one or more times inside function
+  definition.
 
+  Example:
+  ```elixir
+  @spec test_check(x :: integer) :: integer | no_return
+  def test_check(x) do
+    r = x * x
+    check r > x or r == 1
+    r
+  end
+  ```
+  """
   defmacro check(condition) do
     check_ast(condition, "")
   end
 
+  @doc ~S"""
+  The same as `ExContract.check/1` but in addition accepts message paramter that gets embedded into
+  `ExContract.CheckException`.
+  """
+  defmacro check(condition, msg) do
+    check_ast(condition, msg)
+  end
+
+  @doc ~S"""
+  Fail statement indicates that it is belived that a function excecution should never reach a
+  portion of the code that contains the `fail` macro. Excecution of `fail` macro indicates that a
+  particular path in function execution is possible and understanding of program control flow needs
+  to be revised. In effect, this indicates a bug in the implementation of the function. This bug is
+  manifested by exception`ExContract.FailException`. Macro `fail` can occure one or more times
+  inside function definition.
+
+  Example:
+  ```elixir
+  @spec test_fail(x :: integer) :: integer | no_return
+  def test_fail(x) do
+    fail "This callback should never have been executed"
+  end
+  """
   defmacro fail(msg) do
     ast =
       quote do
@@ -214,20 +300,17 @@ defmodule ExContract do
   end
 
   @doc """
-  This macro replaces Kernel.def macro and adds support for DbC. When there are no pre or post
-  conditions that were specified, the macro generates the same code as the Kernel module. When pre
-  conditions are specified, this macro insert the portion that adds the checks as the first
-  statements that are executed. When postcoditions are specified the macro wraps the body of the
-  function and stores the result into `result` variable that is avialable for examination in the
-  definition of ensures. If any of assertions are false, an exception is raised.
-  """
-  defmacro def(definition, do: body) do
-    def_imp(true, definition, body, __CALLER__)
-  end
+  This macro is not meant to be called directly from client code; instead its invokation is made at
+  compile time when it generates AST decorated with DbC constructs. This macro re-defines
+  `Kernel.def/2` and adds Design by Contract functionality to Elixir. When no pre or post-conditions
+  are specified, this macro generates the same code as `Kernel.def/2`. When pre-conditions are
+  specified, this macro insert the portion that adds the checks as the first statements that are
+  executed. When post-coditions are specified the macro wraps the body of the function and stores
+  the result into `result` variable that is avialable for examination in the definition of
+  `ExContract.ensures/1`. The macro handles function definitions that contain implicit `try` block
+  that is followed by `rescue`, `after`, or `catch`.
 
-  @doc """
-  This macros handles function definitions that contain implicit `try` block that is followed by
-  `rescue`, `after`, or `catch`. Example:
+  Example:
   ```
   def without_even_trying do
     raise "oops"
@@ -235,26 +318,21 @@ defmodule ExContract do
     IO.puts "cleaning up!"
   end
   ```
-  In this case the macro receives AST for body of this form:
-  ```
-  [do: {...}, rescue: [...]]
-  ```
   """
+  defmacro def(definition, do: body) do
+    def_imp(true, definition, body, __CALLER__)
+  end
   defmacro def(definition, body) do
     body_ast = def_implicit_try_imp(body)
     def_imp(true, definition, body_ast, __CALLER__)
   end
 
   @doc """
-  The same as def macro except supports `requires` and `ensures` for private functions.
+  The same as `ExContract.def/2` macro except add support for private functions.
   """
   defmacro defp(definition, do: body) do
     def_imp(false, definition, body, __CALLER__)
   end
-  @doc """
-  The same as def macro except supports `requires` and `ensures` for private functions with implicit
-  try block.
-  """
   defmacro defp(definition, body) do
     body_ast = def_implicit_try_imp(body)
     def_imp(false, definition, body_ast, __CALLER__)

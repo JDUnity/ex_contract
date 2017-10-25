@@ -1,6 +1,6 @@
 defmodule ExContract.CheckException do
   @moduledoc """
-  Custom exception raised by `ExContract.Contract.check` macro.
+  Custom exception raised by `ExContract.check/1` macro.
   """
 
   use ExContract.BaseContractException

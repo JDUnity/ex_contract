@@ -1,11 +1,11 @@
 defmodule ExContract.ConditionMsg do
   @moduledoc """
-  Holds data related to contract condition and optional message that is reported when such
-  condition fails.
+  This module is not meant to be used directly by client code. This module holds data related to
+  contract condition and optional message that is reported when such condition fails.
   """
 
   @typedoc """
-  Defines fields that store `JdContracts` compile state.
+  Defines fields that store `ExContract` compile state.
   * `:condition` - tuple representing an AST of Elixir conditon statement that is to return boolean.
   * `:msg` - an optional message that is to be retported when the `:condition` turns out to be
   `false`.

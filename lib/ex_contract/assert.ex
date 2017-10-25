@@ -1,7 +1,8 @@
 defmodule ExContract.Assert do
   @moduledoc """
-  This is implementation module used by `ExContract.Contract` for making calls that check for
-  requires, ensures, check, and fail conditions.
+  This module is not meant to be used directly by client code. This is an implementation module used
+  by `ExContract` used for implementing checking of conditions in `ExContract.requires/1`,
+  `ExContract.ensures/1`, `ExContract.check/1`, and `ExContract.fail/1` macros.
   """
 
   alias ExContract.{RequiresException, EnsuresException, CheckException, FailException}
