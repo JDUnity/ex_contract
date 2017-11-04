@@ -1,6 +1,6 @@
 # ExContracts
 
-This is Elixir library that adds support for design by contract. See [DbC](https://en.wikipedia.org/wiki/Design_by_contract) for introductory description.
+This is an Elixir library that adds support for design by contract. See [DbC](https://en.wikipedia.org/wiki/Design_by_contract) for introductory description.
 
 ## Theory
 
@@ -43,7 +43,7 @@ written claiming these assumptions were true.
 
 `ExContract.fail/1` macro is useful when it is our understanding that certain portion of code
 should never be executed or reached. If this proves not to be the case, we should re-examine the
-code and and make necessary corrections.
+code and make necessary corrections.
 
 To summarize, contracts allow us to fail fast as recommended by Elixir and Erlang experts. We can
 clearly express what is required before calling a function and what benefit we obtain. Finally,
