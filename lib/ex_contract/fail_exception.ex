@@ -5,11 +5,9 @@ defmodule ExContract.FailException do
 
   use ExContract.BaseContractException
 
-  @spec new(env :: any, msg :: String.t) :: t
+  @spec new(env :: any, msg :: String.t()) :: t
   def new(env, msg) do
-    %__MODULE__{message:
-    "Fail condition executed. Invalid assumption in function
+    %__MODULE__{message: "Fail condition executed. Invalid assumption in function
 [#{function_desc(env.function)}] #{msg}"}
   end
-
 end
