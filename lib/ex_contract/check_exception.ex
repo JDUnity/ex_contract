@@ -11,7 +11,7 @@ defmodule ExContract.CheckException do
   end
 
   defp message(condition_txt, env, msg) do
-    "Check condition [#{condition_txt}] violated. " <>
+    "Check condition [#{inspect(condition_txt)}] violated. " <>
     "Invalid assumption in function \ [#{function_desc(env.function)}] #{msg}"
   end
 end

@@ -11,7 +11,7 @@ defmodule ExContract.EnsuresException do
   end
 
   defp message(condition_txt, env, msg) do
-    "Post-condition [#{condition_txt}] violated. " <>
+    "Post-condition [#{inspect(condition_txt)}] violated. " <>
     "Invalid implementation of function \ [#{function_desc(env.function)}] #{msg}"
   end
 end
