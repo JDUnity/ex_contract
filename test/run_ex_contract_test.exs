@@ -35,5 +35,4 @@ defmodule RunExContractTest do
   test "ExContractTest.run_fail_tests()" do
     ExContractTest.run_fail_tests()
   end
-
 end
