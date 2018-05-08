@@ -4,13 +4,13 @@ defmodule ExContract.Mixfile do
   def project do
     [
       app: :ex_contract,
-      version: "0.1.1",
+      version: "0.1.2",
       elixir: "~> 1.5",
-      start_permanent: Mix.env == :prod,
+      start_permanent: Mix.env() == :prod,
       description: description(),
       package: package(),
       deps: deps(),
-       # Docs
+      # Docs
       name: "Ex Contract",
       source_url: "https://github.com/JDUnity/ex_contract",
       homepage_url: "http://unitypos.com",
@@ -18,10 +18,10 @@ defmodule ExContract.Mixfile do
         main: "readme",
         logo: "JD_Unity2_128x128.png",
         extras: ["README.md"]
-            ],
+      ],
       # Testing setup to enable dialyzer. Tests are implemented in .ex files to allow dialyzer to
       # perform type checking. They are run using .exs files.
-      elixirc_paths: elixirc_paths(Mix.env),
+      elixirc_paths: elixirc_paths(Mix.env()),
       test_pattern: "*_test.exs",
       warn_test_pattern: "test.ex"
     ]
@@ -60,4 +60,5 @@ defmodule ExContract.Mixfile do
       {:ex_doc, "~> 0.18", only: :dev, runtime: false}
     ]
   end
+
 end
