@@ -1,4 +1,4 @@
-# ExContracts
+# ExContract
 
 This is an Elixir library that adds support for design by contract. See [DbC](https://en.wikipedia.org/wiki/Design_by_contract) for introductory description.
 
