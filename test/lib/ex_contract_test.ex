@@ -290,6 +290,19 @@ defmodule ExContractTest do
     x * y
   end
 
+  requires(x > 0 or x == -1, "Called with x=#{x}")
+  requires(y > 0 or x == -1, "Called with y=#{y}")
+  ensures(result == x * y or result == -1)
+  @spec test_requires_and_ensures_multiple_clauses(x :: pos_integer | -1, y :: pos_integer | -1) ::
+          pos_integer | no_return
+  defp test_requires_and_ensures_multiple_clauses(-1 = x, -1 = y), do: -1
+
+  # Uncommenting the following line results in compile error since it is not allowed to define
+  # contracts in between different clauses of functions with the same name and arity.
+  # requires(x == 0)
+
+  defp test_requires_and_ensures_multiple_clauses(x, y), do: x * y
+
   #
   # Check Tests
   #
@@ -417,6 +430,10 @@ defmodule ExContractTest do
     assert_raise(EnsuresException, fn -> test_requires_and_ensures_failure_p(5, 10) end)
     assert_raise(RequiresException, fn -> test_requires_and_ensures_failure(0, 10) end)
     assert_raise(RequiresException, fn -> test_requires_and_ensures_failure_p(0, 10) end)
+
+    assert test_requires_and_ensures_multiple_clauses(-1, -1) == -1
+    assert test_requires_and_ensures_multiple_clauses(6, 10) == 60
+    assert_raise RequiresException, fn -> test_requires_and_ensures_multiple_clauses(0, 10) end
   end
 
   @spec run_check_tests() :: nil | no_return
