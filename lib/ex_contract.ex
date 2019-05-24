@@ -6,11 +6,9 @@ defmodule ExContract do
   """
 
   alias Macro.Env
-  alias ExContract.CompileState
+  alias ExContract.CompileStateFsm, as: FSM
   alias ExContract.ConditionMsg
   alias ExContract.Assert
-
-  @default_state CompileState.new()
 
   @typedoc """
   Defines type for Elixir Abastract Syntax Tree that is being modified by this module to add support
@@ -22,9 +20,16 @@ defmodule ExContract do
   # Private Functions
   #
 
-  @spec agent_name(env :: Env.t()) :: atom
-  defp agent_name(%Env{module: module} = _env) do
-    Module.concat(__MODULE__, module)
+  defp fsm(%Env{module: module}) do
+    FSM.name(module)
+  end
+
+  defmacrop with_fsm(env \\ nil, do: block) do
+    quote do
+      import ExContract.CompileStateFsm
+      var!(fsm) = FSM.name(unquote(env).module)
+      unquote(block)
+    end
   end
 
   # Transforms a list of pre-conditions to ast that is to be inserted into client code.
@@ -66,11 +71,6 @@ defmodule ExContract do
 
     # IO.puts("check_ast=#{Macro.to_string(ast)}")
     ast
-  end
-
-  @spec get_and_reset_compile_state(env :: Env.t()) :: CompileState.t()
-  defp get_and_reset_compile_state(%Env{} = env) do
-    Agent.get_and_update(agent_name(env), fn %CompileState{} = s -> {s, @default_state} end)
   end
 
   @spec build_body_with_contracts_ast(
@@ -120,7 +120,9 @@ defmodule ExContract do
 
   @spec def_imp(public? :: boolean, definition :: t_ast, body :: t_ast, env :: Env.t()) :: t_ast
   defp def_imp(public?, definition, body, env) do
-    %CompileState{requires: requires, ensures: ensures} = get_and_reset_compile_state(env)
+    FSM.function_def(fsm(env), definition)
+    requires = FSM.pending_requires(fsm(env))
+    ensures = FSM.pending_ensures(fsm(env))
 
     body_with_contracts_ast = build_body_with_contracts_ast(requires, body, ensures)
 
@@ -179,13 +181,15 @@ defmodule ExContract do
   #
 
   defmacro __using__(_options) do
-    {:ok, _pid} = Agent.start_link(fn -> @default_state end, name: agent_name(__CALLER__))
+    module = __CALLER__.module
+    {:ok, _pid} = FSM.start_link(module)
 
     ast =
       quote do
         import Kernel, except: [def: 2, defp: 2]
         import unquote(__MODULE__)
         alias ExContract.Contract.Assert
+
         @before_compile unquote(__MODULE__)
       end
 
@@ -194,7 +198,7 @@ defmodule ExContract do
   end
 
   defmacro __before_compile__(%Env{} = env) do
-    :ok = Agent.stop(agent_name(env))
+    FSM.stop(fsm(env))
   end
 
   @doc ~S"""
@@ -217,9 +221,7 @@ defmodule ExContract do
   ```
   """
   defmacro requires(condition) do
-    Agent.update(agent_name(__CALLER__), fn %CompileState{} = s ->
-      CompileState.add_require(s, condition)
-    end)
+    FSM.requires_def(fsm(__CALLER__), ConditionMsg.new(condition))
   end
 
   @doc ~S"""
@@ -227,9 +229,7 @@ defmodule ExContract do
   into `ExContract.RequiresException`.
   """
   defmacro requires(condition, msg) do
-    Agent.update(agent_name(__CALLER__), fn %CompileState{} = s ->
-      CompileState.add_require(s, condition, msg)
-    end)
+    FSM.requires_def(fsm(__CALLER__), ConditionMsg.new(condition, msg))
   end
 
   @doc ~S"""
@@ -251,9 +251,7 @@ defmodule ExContract do
   ```
   """
   defmacro ensures(condition) do
-    Agent.update(agent_name(__CALLER__), fn %CompileState{} = s ->
-      CompileState.add_ensure(s, condition)
-    end)
+    FSM.ensures_def(fsm(__CALLER__), ConditionMsg.new(condition))
   end
 
   @doc ~S"""
@@ -261,9 +259,7 @@ defmodule ExContract do
   into `ExContract.EnsuresException`.
   """
   defmacro ensures(condition, msg) do
-    Agent.update(agent_name(__CALLER__), fn %CompileState{} = s ->
-      CompileState.add_ensure(s, condition, msg)
-    end)
+    FSM.ensures_def(fsm(__CALLER__), ConditionMsg.new(condition, msg))
   end
 
   @doc ~S"""
