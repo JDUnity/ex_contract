@@ -24,14 +24,6 @@ defmodule ExContract do
     FSM.name(module)
   end
 
-  defmacrop with_fsm(env \\ nil, do: block) do
-    quote do
-      import ExContract.CompileStateFsm
-      var!(fsm) = FSM.name(unquote(env).module)
-      unquote(block)
-    end
-  end
-
   # Transforms a list of pre-conditions to ast that is to be inserted into client code.
   @spec requires_ast(cond_msg :: ConditionMsg.t()) :: t_ast
   defp requires_ast(%ConditionMsg{condition: condition, msg: msg} = _cond_msg) do
