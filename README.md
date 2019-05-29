@@ -178,6 +178,29 @@ When condition provided to `ExContract.check/1` macro turns out to be false, the
 followed by generic message related to type of contract that failed. The message embeds the second
 parameter if such was specified in macro call.
 
+## Logical Predicates
+
+The `ExContract.Predicates` module defines some logical predicates, both as functions and as infix
+operators. These include:
+
+  * `xor(p, q)` / `p <|> q` - logical exclusive or (is either `p` or `q` true, but not both)
+  * `implies?(p, q)` / `p ~> q` - logical implication (does `p` imply `q`)
+
+The `ExContract.Predicates` module is automatically imported for all `requires`, `ensures`, and
+`check` conditions and can be explicitly imported anywhere else to use the functions or operators.
+
+Example:
+
+
+```elixir
+  def test_predicates(x) do
+    r = x * x
+    check implies?(r == 1, x == 1)
+    check (r == 1) ~> (x == 1)
+    r
+  end
+```
+
 ## Fail-condition: fail
 
 `ExContract.fail/1` macro can appear multiple times inside of function body. It raises
