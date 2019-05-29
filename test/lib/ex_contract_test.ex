@@ -298,6 +298,7 @@ defmodule ExContractTest do
   def test_check(x) do
     r = x * x
     check r > x or r == 1
+    check (r == 1) ~> (x == 1)
     r
   end
 
@@ -421,6 +422,7 @@ defmodule ExContractTest do
 
   @spec run_check_tests() :: nil | no_return
   def run_check_tests do
+    assert test_check(1) == 1
     assert test_check(2) == 4
     assert_raise(CheckException, fn -> test_check(0) end)
   end
