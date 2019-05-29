@@ -34,6 +34,7 @@ defmodule ExContract do
 
     ast =
       quote do
+        import ExContract.Predicates
         Assert.requires(unquote(condition), unquote(condition_txt), __ENV__, unquote(msg))
       end
 
@@ -48,6 +49,7 @@ defmodule ExContract do
 
     ast =
       quote do
+        import ExContract.Predicates
         Assert.ensures(unquote(condition), unquote(condition_txt), __ENV__, unquote(msg))
       end
 
@@ -61,6 +63,7 @@ defmodule ExContract do
 
     ast =
       quote do
+        import ExContract.Predicates
         Assert.check(unquote(condition), unquote(condition_txt), __ENV__, unquote(msg))
       end
 
